@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  </head>
+  <body>
+    {% for question, options in questions %}
+      <blockquote>{{ question }}</blockquote>
+      {% for option in options %}
+        <blockquote>{{option }}</blockquote>
+      {% endfor %}
+    {% endfor %}
+
+    <form action="/newpoll" method="post">
+      <div><textarea name="question" rows="3" cols="60"></textarea></div>
+      <div><textarea name="option1" rows="1" cols="60"></textarea></div>
+      <div><textarea name="option2" rows="1" cols="60"></textarea></div>
+      <div><textarea name="option3" rows="1" cols="60"></textarea></div>
+      <div><input type="submit" value="Start Poll"></div>
+    </form>
+
+    <a href="{{ url }}">{{ url_linktext }}</a>
+
+  </body>
+</html>
