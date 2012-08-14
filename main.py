@@ -7,9 +7,9 @@ jinja_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.di
 
 from google.appengine.ext import db
 
-#class Vote(db.Model):
-#    """Individual Votes, dated and ID's as much as poss"""
-#    date = db.DateTimeProperty(auto_now_add=True)
+class Vote(db.Model):
+    """Individual Votes, dated and ID'd as much as poss"""
+    date = db.DateTimeProperty(auto_now_add=True)
     
 class Option(db.Model):
     """Options to select"""
@@ -34,7 +34,7 @@ class MainPage(webapp2.RequestHandler):
         questions = question_query.fetch(10)
         
         for q in questions:
-            option_query = db.GqlQuery("SELECT name "
+            option_query = db.GqlQuery("SELECT name, voteCount "
                                   "FROM Option "
                                   "WHERE ANCESTOR IS :1 "
                                   "LIMIT 10",
@@ -43,13 +43,15 @@ class MainPage(webapp2.RequestHandler):
             option_query.run()
             option_list = []
             
-            for option in option_query:
-                option_list.append(option.name)
-                        
-            questions_options.append((q.name,option_list))
+            for option in option_query:                
+                option_list.append('<a href="/vote/?q='
+                                   + str(q.key().id()) + 
+                                   '&v=' + str(option.key().id()) + 
+                                   '">' + option.name + '</a> - '
+                                   + str(option.voteCount))
             
-        
-        
+            questions_options.append((q.name, option_list))
+            
         template_values = {
             'questions': questions_options
         }
@@ -84,8 +86,28 @@ class Create(webapp2.RequestHandler):
         option3.colour = random.randrange(0,255)
         option3.put()
         self.redirect('/')
+        
+class CastVote(webapp2.RequestHandler):
+    def get(self):
+        """pass me the db id of the question then option"""
+        q_id = self.request.get('q')
+        option_id =  self.request.get('v')
+        q = Question.get_by_id(int(q_id))
+        option = Option.get_by_id(int(option_id), q)
+        
+        vote = Vote(parent=option)
+        vote.put()
+        
+        option.voteCount += 1
+        option.put()
+        
+        """Display a page for that poll?"""
+        
+        self.redirect('/')
+        
 
 
 app = webapp2.WSGIApplication([('/', MainPage),
-                               ('/newpoll', Create)],
+                               ('/newpoll', Create),
+                               ('/vote/', CastVote)],
                               debug=True)
