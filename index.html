@@ -3,9 +3,9 @@
     <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
   </head>
   <body>
-  <H3>WARNING! Test only! Any data here is liable to be deleted</H3>
+  <H5>WARNING! Test only! Any data here is liable to be deleted</H5>
     {% for question, options in questions %}
-      <blockquote>{{ question }}</blockquote>
+      <H3>{{ question }}</H3>
       {% for option in options %}
         <blockquote>{{ option }}</blockquote>
       {% endfor %}

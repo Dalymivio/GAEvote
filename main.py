@@ -2,6 +2,7 @@ import webapp2
 import jinja2
 import os
 import random
+import imagegen
 
 jinja_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
@@ -16,6 +17,7 @@ class Option(db.Model):
     name = db.StringProperty()
     voteCount = db.IntegerProperty()
     colour = db.IntegerProperty()
+    image = db.BlobProperty()
 
 class Question(db.Model):
     """Questions to ask"""
@@ -47,7 +49,11 @@ class MainPage(webapp2.RequestHandler):
                 option_list.append('<a href="/vote/?q='
                                    + str(q.key().id()) + 
                                    '&v=' + str(option.key().id()) + 
-                                   '">' + option.name + '</a> - '
+                                   '">' + option.name + 
+                                   ' - <img src="/img/?q='
+                                   + str(q.key().id()) +
+                                   '&v=' + str(option.key().id())
+                                   + '" /></a> - '
                                    + str(option.voteCount))
             
             questions_options.append((q.name, option_list))
@@ -72,18 +78,21 @@ class Create(webapp2.RequestHandler):
         option1.name = self.request.get('option1')
         option1.voteCount = 0
         option1.colour = random.randrange(0,255)
+        option1.image = db.Blob(imagegen.test((option1.colour, 0, 0)))
         option1.put()
         
         option2 = Option(parent=poll.key())
         option2.name = self.request.get('option2')
         option2.voteCount = 0
         option2.colour = random.randrange(0,255)
+        option2.image = db.Blob(imagegen.test((0, option2.colour, 0)))
         option2.put()
         
         option3 = Option(parent=poll.key())
         option3.name = self.request.get('option3')
         option3.voteCount = 0
         option3.colour = random.randrange(0,255)
+        option3.image = db.Blob(imagegen.test((0, 0, option3.colour)))
         option3.put()
         self.redirect('/')
         
@@ -105,9 +114,20 @@ class CastVote(webapp2.RequestHandler):
         
         self.redirect('/')
         
+class LoadImage(webapp2.RequestHandler):
+    def get(self):
+        q_id = self.request.get('q')
+        option_id =  self.request.get('v')
+        q = Question.get_by_id(int(q_id))
+        option = Option.get_by_id(int(option_id), q)
+        
+        self.response.headers['Content-Type'] = 'image/png'
+        self.response.out.write(option.image)
+        return
 
 
 app = webapp2.WSGIApplication([('/', MainPage),
                                ('/newpoll', Create),
-                               ('/vote/', CastVote)],
+                               ('/vote/', CastVote),
+                               ('/img/', LoadImage)],
                               debug=True)
