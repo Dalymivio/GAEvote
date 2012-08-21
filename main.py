@@ -78,21 +78,21 @@ class Create(webapp2.RequestHandler):
         option1.name = self.request.get('option1')
         option1.voteCount = 0
         option1.colour = random.randrange(0,255)
-        option1.image = db.Blob(imagegen.test((option1.colour, 0, 0)))
+        option1.image = db.Blob(imagegen.create((option1.colour), option1.name))
         option1.put()
         
         option2 = Option(parent=poll.key())
         option2.name = self.request.get('option2')
         option2.voteCount = 0
         option2.colour = random.randrange(0,255)
-        option2.image = db.Blob(imagegen.test((0, option2.colour, 0)))
+        option2.image = db.Blob(imagegen.create((option2.colour), option2.name))
         option2.put()
         
         option3 = Option(parent=poll.key())
         option3.name = self.request.get('option3')
         option3.voteCount = 0
         option3.colour = random.randrange(0,255)
-        option3.image = db.Blob(imagegen.test((0, 0, option3.colour)))
+        option3.image = db.Blob(imagegen.create((option3.colour), option3.name))
         option3.put()
         self.redirect('/')
         
