@@ -16,14 +16,14 @@
     <div id="header">
       <div id="logo">
         <h1>Vote<a href="/">!</a></h1>
-        <div class="slogan">Voting on anything, anywhere!</div>
+        <div class="slogan">I can make polls happen</div>
       </div>
       <div id="menubar">
         <ul id="menu">
           <!-- put class="current" in the li tag for the selected page - to highlight which page you're on -->
-          <li class="current"><a href="/">Home</a></li>
+          <li><a href="/">Home</a></li>
           <li><a href="#">Examples</a></li>
-          <li><a href="/new">Create New</a></li>
+          <li class="current"><a href="/new">Create New</a></li>
           <li><a href="#">Another Page</a></li>
           <li><a href="#">Contact Us</a></li>
         </ul>
@@ -57,16 +57,22 @@
         </div>
       </div>
       <div id="content">
-        {% for question, options in questions %}
-          <H3>{{ question }}</H3>
-            {% for option in options %}
-              <blockquote>{{ option }}</blockquote>
-            {% endfor %}
-        {% endfor %}
+        <!-- insert the page content here -->
+        <h2>Create a new poll</h2>
+        <form action="/newpoll" method="post">
+          <div class="form_settings">
+            <script src="/style/addInput.js" language="Javascript" type="text/javascript"></script>
+            <p><span>Question to be asked</span><textarea rows="8" cols="50" name="question"></textarea></p>
+            <div id="1stDynamicInput"><p><span>Option 1</span><input type="text" name="option" value="" /></p></div>
+            <div id="dynamicInput"><p><span>Option 2</span><input type="text" name="option" value="" /></p></div>
+            <p style="padding-top: 15px"><span>&nbsp;</span><input class="submit" type="button" value="Add another option" onClick="addInput('dynamicInput');">
+            <p style="padding-top: 15px"><span>&nbsp;</span><input class="submit" type="submit" name="name" value="Create!" /></p>
+          </div>
+        </form>
       </div>
     </div>
     <div id="footer">
-      <p><a href="http://www.html5webtemplates.co.uk">design from HTML5webtemplates.co.uk</a></p>
+      <p><p><a href="http://www.html5webtemplates.co.uk">design from HTML5webtemplates.co.uk</a></p>
     </div>
   </div>
 </body>

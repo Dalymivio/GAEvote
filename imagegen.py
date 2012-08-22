@@ -17,7 +17,7 @@ def test(colour):
 
 def create(colour, text):
     
-    path = os.path.join(os.path.dirname(__file__), 'assets/helvR12.pil')
+    path = os.path.join(os.path.dirname(__file__), 'assets/Deja.pil')
     font = ImageFont.load(path)
     
     textWidth, textHeight = font.getsize(text)

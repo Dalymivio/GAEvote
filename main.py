@@ -32,7 +32,7 @@ class MainPage(webapp2.RequestHandler):
 
         questions_options = []
         
-        question_query = Question.all()
+        question_query = Question.all().order('-startDate')
         questions = question_query.fetch(10)
         
         for q in questions:
@@ -65,37 +65,6 @@ class MainPage(webapp2.RequestHandler):
         template = jinja_environment.get_template('index.html')
         self.response.out.write(template.render(template_values))
         
-        
-class Create(webapp2.RequestHandler):
-    def post(self):
-        
-        poll = Question()
-        poll.name = self.request.get('question')
-        poll.voteCount = 0
-        poll.put()
-        
-        option1 = Option(parent=poll.key())
-        option1.name = self.request.get('option1')
-        option1.voteCount = 0
-        option1.colour = random.randrange(0,255)
-        option1.image = db.Blob(imagegen.create((option1.colour), option1.name))
-        option1.put()
-        
-        option2 = Option(parent=poll.key())
-        option2.name = self.request.get('option2')
-        option2.voteCount = 0
-        option2.colour = random.randrange(0,255)
-        option2.image = db.Blob(imagegen.create((option2.colour), option2.name))
-        option2.put()
-        
-        option3 = Option(parent=poll.key())
-        option3.name = self.request.get('option3')
-        option3.voteCount = 0
-        option3.colour = random.randrange(0,255)
-        option3.image = db.Blob(imagegen.create((option3.colour), option3.name))
-        option3.put()
-        self.redirect('/')
-        
 class CastVote(webapp2.RequestHandler):
     def get(self):
         """pass me the db id of the question then option"""
@@ -110,7 +79,7 @@ class CastVote(webapp2.RequestHandler):
         option.voteCount += 1
         option.put()
         
-        """Display a page for that poll?"""
+        """Display a page for that poll if from this host, else send back"""
         
         self.redirect('/')
         
@@ -125,9 +94,33 @@ class LoadImage(webapp2.RequestHandler):
         self.response.out.write(option.image)
         return
 
+class Create(webapp2.RequestHandler):
+    def get(self):
+        template_values = {}
+        template = jinja_environment.get_template('new.html')
+        self.response.out.write(template.render(template_values))
+        
+class Create2(webapp2.RequestHandler):
+    def post(self):
+        
+        poll = Question()
+        poll.name = self.request.get('question')
+        poll.voteCount = 0
+        poll.put()        
+        
+        options = self.request.get_all('option')
+        for o in options:
+            option = Option(parent=poll.key())
+            option.name = o
+            option.voteCount = 0
+            option.colour = random.randrange(0,255)
+            option.image = db.Blob(imagegen.create(option.colour, o)) 
+            option.put()
+            self.redirect('/')
 
 app = webapp2.WSGIApplication([('/', MainPage),
-                               ('/newpoll', Create),
+                               ('/newpoll', Create2),
+                               ('/new', Create),
                                ('/vote/', CastVote),
                                ('/img/', LoadImage)],
                               debug=True)
