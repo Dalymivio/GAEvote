@@ -26,3 +26,8 @@ indexes:
   properties:
   - name: name
   - name: voteCount
+
+- kind: Option
+  ancestor: yes
+  properties:
+  - name: voteCount

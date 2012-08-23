@@ -15,18 +15,27 @@ def test(colour):
     
     return s.getvalue()
 
-def create(colour, text):
+def create(width, colour, text, ratio):
     
     path = os.path.join(os.path.dirname(__file__), 'assets/Deja.pil')
     font = ImageFont.load(path)
     
     textWidth, textHeight = font.getsize(text)
     
-    image = Image.new('RGBA', (textWidth+105, textHeight), (0,0,0,0))
+    fill = (0, 0, colour, 255)
+    
+    image = Image.new('RGBA', (width+100, textHeight), (0,0,0,0))
     draw = ImageDraw.Draw(image)
-    draw.rectangle([(0,0), (textWidth+5, 20)], fill=None, outline='black')
-    draw.text((0,0), text, font=font, fill='black')
+    draw.text((width - textWidth, 0), text, font=font, fill='black')
+    draw.rectangle([(width, 0), (width+ratio, textHeight)], fill=fill, outline=None)
+
     s = StringIO.StringIO()
     image.save(s, 'PNG')
     
     return s.getvalue()
+
+def width(text):
+    path = os.path.join(os.path.dirname(__file__), 'assets/Deja.pil')
+    font = ImageFont.load(path)
+    
+    return font.getsize(text)[0]

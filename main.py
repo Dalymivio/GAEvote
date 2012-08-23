@@ -25,6 +25,7 @@ class Question(db.Model):
     voteCount = db.IntegerProperty()
     closingDate = db.DateTimeProperty()
     startDate = db.DateTimeProperty(auto_now_add=True)
+    textWidth = db.IntegerProperty()
 
 
 class MainPage(webapp2.RequestHandler):
@@ -36,10 +37,10 @@ class MainPage(webapp2.RequestHandler):
         questions = question_query.fetch(10)
         
         for q in questions:
-            option_query = db.GqlQuery("SELECT name, voteCount "
+            option_query = db.GqlQuery("SELECT voteCount "
                                   "FROM Option "
                                   "WHERE ANCESTOR IS :1 "
-                                  "LIMIT 10",
+                                  "LIMIT 20",
                                   q.key())
             
             option_query.run()
@@ -49,8 +50,7 @@ class MainPage(webapp2.RequestHandler):
                 option_list.append('<a href="/vote/?q='
                                    + str(q.key().id()) + 
                                    '&v=' + str(option.key().id()) + 
-                                   '">' + option.name + 
-                                   ' - <img src="/img/?q='
+                                   '"><img src="/img/?q='
                                    + str(q.key().id()) +
                                    '&v=' + str(option.key().id())
                                    + '" /></a> - '
@@ -77,7 +77,23 @@ class CastVote(webapp2.RequestHandler):
         vote.put()
         
         option.voteCount += 1
+        q.voteCount += 1
+ 
+        
+        """Update graph(s)"""
+        width = q.textWidth
+        colour = option.colour
+        text = option.name
+        optionCount = float(option.voteCount)
+        questionCount = float(q.voteCount)
+        ratio = int((optionCount / questionCount)*100)
+        
+        option.image = db.Blob(imagegen.create(width, colour, text, ratio))      
+        
+        
+        """Save to the datastore!"""
         option.put()
+        q.put()
         
         """Display a page for that poll if from this host, else send back"""
         
@@ -106,17 +122,28 @@ class Create2(webapp2.RequestHandler):
         poll = Question()
         poll.name = self.request.get('question')
         poll.voteCount = 0
-        poll.put()        
+       
         
         options = self.request.get_all('option')
+        
+        width = 0
+        for o in options:
+            tmpWidth = imagegen.width(o)
+            if tmpWidth > width:
+                width = tmpWidth
+        
+        poll.textWidth = width
+        poll.put() 
+        
         for o in options:
             option = Option(parent=poll.key())
             option.name = o
             option.voteCount = 0
             option.colour = random.randrange(0,255)
-            option.image = db.Blob(imagegen.create(option.colour, o)) 
+            option.image = db.Blob(imagegen.create(width, option.colour, o, 0)) 
             option.put()
-            self.redirect('/')
+            
+        self.redirect('/')
 
 app = webapp2.WSGIApplication([('/', MainPage),
                                ('/newpoll', Create2),
