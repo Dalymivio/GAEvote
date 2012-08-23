@@ -77,22 +77,32 @@ class CastVote(webapp2.RequestHandler):
         vote.put()
         
         option.voteCount += 1
-        q.voteCount += 1
- 
+        option.put()
+        
+        q.voteCount += 1 
         
         """Update graph(s)"""
         width = q.textWidth
-        colour = option.colour
-        text = option.name
-        optionCount = float(option.voteCount)
         questionCount = float(q.voteCount)
-        ratio = int((optionCount / questionCount)*100)
+        q.put()
         
-        option.image = db.Blob(imagegen.create(width, colour, text, ratio))      
+        option_query = db.GqlQuery("SELECT * "
+                                   "FROM Option "
+                                   "WHERE ANCESTOR IS :1 "
+                                   "LIMIT 20",
+                                   q.key())
+        option_query.run()
+        
+        for o in option_query:
+            colour = o.colour
+            text = o.name
+            optionCount = float(o.voteCount)
+            ratio = int((optionCount / questionCount)*100)
+            o.image = db.Blob(imagegen.create(width, colour, text, ratio))
+            o.put()      
         
         
         """Save to the datastore!"""
-        option.put()
         q.put()
         
         """Display a page for that poll if from this host, else send back"""
