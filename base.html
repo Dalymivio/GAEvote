@@ -1,3 +1,9 @@
+{% set navigation_bar = [
+    ('/', 'index', 'Home'),
+    ('/new', 'new', 'Create New')
+] -%}
+{% set active_page = active_page|default('index') -%} 
+
 <!DOCTYPE HTML>
 <html>
 
@@ -20,12 +26,10 @@
       </div>
       <div id="menubar">
         <ul id="menu">
-          <!-- put class="current" in the li tag for the selected page - to highlight which page you're on -->
-          <li class="current"><a href="/">Home</a></li>
-          <li><a href="#">Examples</a></li>
-          <li><a href="/new">Create New</a></li>
-          <li><a href="#">Another Page</a></li>
-          <li><a href="#">Contact Us</a></li>
+        {% for href, id, caption in navigation_bar %}
+          <li{% if id == active_page %} class="current"{% endif
+          %}><a href="{{ href|e }}">{{ caption|e }}</a></li>
+        {% endfor %}
         </ul>
       </div>
     </div>
