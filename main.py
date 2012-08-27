@@ -50,10 +50,10 @@ class MainPage(webapp2.RequestHandler):
                 option_list.append('<a href="/vote/?q='
                                    + str(q.key().id()) + 
                                    '&v=' + str(option.key().id()) + 
-                                   '"><img src="/img/?q='
+                                   '"><img src="/img/'
                                    + str(q.key().id()) +
-                                   '&v=' + str(option.key().id())
-                                   + '" /></a> - '
+                                   '/' + str(option.key().id())
+                                   + '.png" /></a> - '
                                    + str(option.voteCount))
             
             questions_options.append((q.name, option_list))
@@ -111,14 +111,15 @@ class CastVote(webapp2.RequestHandler):
         
 class LoadImage(webapp2.RequestHandler):
     def get(self):
-        q_id = self.request.get('q')
-        option_id =  self.request.get('v')
-        q = Question.get_by_id(int(q_id))
-        option = Option.get_by_id(int(option_id), q)
+        path = self.request.path
         
-        self.response.headers['Content-Type'] = 'image/png'
-        self.response.out.write(option.image)
-        return
+        if path.endswith('.png') or path.endswith('.PNG'):
+            _, q_id, option_id = path.rsplit('/', 2)
+            q = Question.get_by_id(int(q_id))            
+            option = Option.get_by_id(int(option_id.lower().rstrip('.png')), q) 
+            self.response.headers['Content-Type'] = 'image/png'
+            self.response.out.write(option.image)
+            return
 
 class Create(webapp2.RequestHandler):
     def get(self):
@@ -159,5 +160,5 @@ app = webapp2.WSGIApplication([('/', MainPage),
                                ('/newpoll', Create2),
                                ('/new', Create),
                                ('/vote/', CastVote),
-                               ('/img/', LoadImage)],
+                               (r'\/img/[0-9]+/[0-9]+.png', LoadImage)],
                               debug=True)
